@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Narrator:
-    def __init__(self, setting="A small village at dawn", model_name="gpt-4o-mini"):
+    def __init__(self, setting="Un pequeño pueblo al amanecer", model_name="gpt-4o-mini"):
         """
         Initializes the Narrator with an initial setting.
 
@@ -16,19 +16,28 @@ class Narrator:
         """
         self.setting = setting
         self.agents = []
-        self.langchain_model = ChatOpenAI(model=model_name, api_key=os.getenv("OPENAI_API_KEY"))  # Initialize Langchain model
+        self.langchain_model = ChatOpenAI(model=model_name, api_key=os.getenv("OPENAI_API_KEY"))
+        self.message_history = [
+            ("system", f"Eres un narrador que ambienta una historia siendo vívido y atmosférico a la vez que muy muy conciso. El escenario inicial es: '{self.setting}'")
+        ]
 
-    def narrate(self, text):
+    def narrate(self, text, choices=False):
         """
         Narrates a piece of the story.
 
         :param text: The text to narrate.
+        :param choices: If False, the generated narrative will focus on descriptive context only.
         """
-        messages = [
-            ("system", "You are a narrator for an interactive story."),
-            ("human", text)
-        ]
-        generated_text = self.langchain_model.invoke(messages).content
+        if not choices:
+            prompt = f"Narra la siguiente escena, pero no incluyas elecciones ni decisiones: '{text}'"
+        else:
+            prompt = f"Narra la siguiente escena, incluye opciones numeradas: '{text}'"
+
+        self.message_history.append(("human", prompt))
+        response = self.langchain_model.invoke(self.message_history)
+        generated_text = response.content
+        self.message_history.append(("assistant", generated_text))
+
         print(generated_text)
 
     def create_agent(self, name, role, motivation):
@@ -42,5 +51,5 @@ class Narrator:
         """
         new_agent = Agent(name, role, motivation)
         self.agents.append(new_agent)
-        self.narrate(f"A new character named {name}, who is a {role}, has entered the story.")
+        self.narrate(f"Un nuevo personaje llamado {name}, que es {role}, ha entrado a la historia.", choices=False)
         return new_agent
