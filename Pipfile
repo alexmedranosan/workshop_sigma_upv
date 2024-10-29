@@ -6,8 +6,13 @@ name = "pypi"
 [packages]
 langchain = "*"
 langgraph = "*"
+langchain-community = "*"
+python-dotenv = "*"
+openai = "*"
+langchain-openai = "*"
 
 [dev-packages]
+pytest = "*"
 
 [requires]
 python_version = "3.10"
